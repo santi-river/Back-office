@@ -74,7 +74,7 @@ export function DashboardTab() {
         type: "orden" as const,
         id: p.id,
         description: `Verificar pago de ${p.comprador}`,
-        detail: `${p.totalQuantity} ${p.tokenType} - $${p.totalPrice.toLocaleString()}`,
+        detail: `${p.totalQuantity} ${p.tokenType} - $${p.totalPrice.toLocaleString("es-AR")}`,
         date: p.createdAt,
         priority: 2,
       })),
@@ -94,7 +94,7 @@ export function DashboardTab() {
         type: "pago_vendedor" as const,
         id: s.id,
         description: `Pagar a ${s.vendedor}`,
-        detail: `${s.quantity} ${s.tokenType} - $${s.subtotal.toLocaleString()}`,
+        detail: `${s.quantity} ${s.tokenType} - $${s.subtotal.toLocaleString("es-AR")}`,
         date: s.createdAt,
         priority: 4,
       })),
@@ -116,7 +116,7 @@ export function DashboardTab() {
         type: "pago_completado" as const,
         id: s.id,
         description: `Pagado a ${s.vendedor}`,
-        detail: `$${s.subtotal.toLocaleString()}`,
+        detail: `$${s.subtotal.toLocaleString("es-AR")}`,
         date: s.createdAt,
       })),
   ]
@@ -142,7 +142,7 @@ export function DashboardTab() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Resumen general de operaciones</p>
       </div>
 
@@ -150,8 +150,8 @@ export function DashboardTab() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">Tareas pendientes</h2>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground text-balance">Tareas pendientes</h2>
           </div>
           {pendingTasks.length > 0 && (
             <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -163,7 +163,7 @@ export function DashboardTab() {
           <CardContent className="p-0">
             {pendingTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <CheckCircle2 className="h-10 w-10 text-success/60 mb-3" />
+                <CheckCircle2 className="h-10 w-10 text-success/60 mb-3" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">No hay tareas pendientes</p>
               </div>
             ) : (
@@ -203,14 +203,14 @@ export function DashboardTab() {
       {/* Completed activity */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">Actividad completada</h2>
+          <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground text-balance">Actividad completada</h2>
         </div>
         <Card>
           <CardContent className="p-0">
             {recentCompleted.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Package className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                <Package className="h-10 w-10 text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">No hay actividad reciente</p>
               </div>
             ) : (
@@ -254,7 +254,7 @@ export function DashboardTab() {
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Publicaciones activas
             </CardTitle>
-            <ListChecks className="h-4 w-4 text-muted-foreground" />
+            <ListChecks className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground tracking-tight">{listingStats.activas}</div>
@@ -269,7 +269,7 @@ export function DashboardTab() {
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Ordenes pendientes
             </CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground tracking-tight">
@@ -286,11 +286,11 @@ export function DashboardTab() {
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Pagos a vendedores
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground tracking-tight">
-              ${pendientePagarVendedores.toLocaleString()}
+              ${pendientePagarVendedores.toLocaleString("es-AR")}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {saleStats.pendientesPagoVendedor} ventas pendientes
@@ -303,14 +303,14 @@ export function DashboardTab() {
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Total vendido
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground tracking-tight">
-              ${totalVentas.toLocaleString()}
+              ${totalVentas.toLocaleString("es-AR")}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              ${pagadoVendedores.toLocaleString()} pagado a vendedores
+              ${pagadoVendedores.toLocaleString("es-AR")} pagado a vendedores
             </p>
           </CardContent>
         </Card>

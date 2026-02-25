@@ -1,7 +1,7 @@
 "use client"
 
-import React from "react"
-import { useState } from "react"
+import React, { Suspense, useCallback } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { StoreProvider } from "@/lib/store"
 import { DashboardTab } from "@/components/dashboard-tab"
 import { SalesListingsTab } from "@/components/sales-listings-tab"
@@ -10,6 +10,8 @@ import { VendorPaymentsTab } from "@/components/vendor-payments-tab"
 import { ListChecks, ShoppingBag, LayoutDashboard, DollarSign } from "lucide-react"
 
 type Tab = "dashboard" | "sales" | "purchases" | "payments"
+
+const validTabs: Tab[] = ["dashboard", "sales", "purchases", "payments"]
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -38,21 +40,33 @@ function SidebarButton({
           : "text-muted-foreground hover:text-foreground hover:bg-accent"
       }`}
     >
-      <Icon className="h-[18px] w-5" />
+      <Icon className="h-[18px] w-5" aria-hidden="true" />
       <span className="leading-none tracking-wide font-semibold text-base">{label}</span>
     </button>
   )
 }
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState<Tab>("dashboard")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const tabParam = searchParams.get("tab")
+  const activeTab: Tab = tabParam && validTabs.includes(tabParam as Tab) ? (tabParam as Tab) : "dashboard"
+
+  const setActiveTab = useCallback((tab: Tab) => {
+    if (tab === "dashboard") {
+      router.replace("/")
+    } else {
+      router.replace(`/?tab=${tab}`)
+    }
+  }, [router])
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
       <aside className="bg-sidebar border-r border-sidebar-border flex flex-col items-center shrink-0 leading-7 w-40 shadow-xl">
         <div className="flex items-center justify-center mt-4 mb-5 overflow-hidden px-2">
-          <img src="/logo-cordoba.png" alt="Gobierno de la Provincia de Cordoba" className="w-full h-auto object-contain" />
+          <img src="/logo-cordoba.png" alt="Gobierno de la Provincia de Cordoba" className="w-full h-auto object-contain" width={144} height={80} />
         </div>
         <nav className="flex flex-col gap-0.5 px-1.5 w-full">
           {tabs.map((tab) => (
@@ -68,7 +82,7 @@ function AppContent() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto min-w-0">
         <div className="max-w-6xl mx-auto px-8 py-8">
           {activeTab === "dashboard" && <DashboardTab />}
           {activeTab === "sales" && <SalesListingsTab />}
@@ -83,7 +97,9 @@ function AppContent() {
 export default function Page() {
   return (
     <StoreProvider>
-      <AppContent />
+      <Suspense>
+        <AppContent />
+      </Suspense>
     </StoreProvider>
   )
 }

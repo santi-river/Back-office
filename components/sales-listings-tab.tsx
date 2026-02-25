@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useStore, type ListingStatus } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +21,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { CheckCircle, Pause, Trash2, MoreHorizontal, Play, XCircle } from "lucide-react"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 
 const statusConfig: Record<ListingStatus, { label: string; className: string }> = {
   PENDIENTE_APROBACION: {
@@ -50,11 +52,33 @@ const statusConfig: Record<ListingStatus, { label: string; className: string }> 
 
 export function SalesListingsTab() {
   const { listings, updateListingStatus } = useStore()
+  const [confirmAction, setConfirmAction] = useState<{
+    listingId: string
+    status: ListingStatus
+    title: string
+    description: string
+    confirmLabel: string
+    variant: "default" | "destructive"
+  } | null>(null)
 
   return (
     <div className="space-y-8">
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null) }}
+        title={confirmAction?.title ?? ""}
+        description={confirmAction?.description ?? ""}
+        confirmLabel={confirmAction?.confirmLabel ?? "Confirmar"}
+        variant={confirmAction?.variant ?? "default"}
+        onConfirm={() => {
+          if (confirmAction) {
+            updateListingStatus(confirmAction.listingId, confirmAction.status)
+            setConfirmAction(null)
+          }
+        }}
+      />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Solicitudes de venta</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">Solicitudes de venta</h1>
         <p className="text-sm text-muted-foreground mt-1">Gestiona las publicaciones de venta de tokens</p>
       </div>
 
@@ -110,7 +134,7 @@ export function SalesListingsTab() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
+                              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                               <span className="sr-only">Abrir menu</span>
                             </Button>
                           </DropdownMenuTrigger>
@@ -118,32 +142,46 @@ export function SalesListingsTab() {
                             {isPending && (
                               <>
                                 <DropdownMenuItem onClick={() => updateListingStatus(listing.id, "ACTIVO")} className="gap-2 cursor-pointer">
-                                  <CheckCircle className="h-4 w-4 text-success" />
+                                  <CheckCircle className="h-4 w-4 text-success" aria-hidden="true" />
                                   Aprobar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateListingStatus(listing.id, "RECHAZADO")} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                                  <XCircle className="h-4 w-4" />
+                                <DropdownMenuItem onClick={() => setConfirmAction({
+                                  listingId: listing.id,
+                                  status: "RECHAZADO",
+                                  title: "Rechazar publicacion",
+                                  description: `Se rechazara la publicacion ${listing.id} de ${listing.vendedor}. Esta accion no se puede deshacer.`,
+                                  confirmLabel: "Rechazar",
+                                  variant: "destructive",
+                                })} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                                  <XCircle className="h-4 w-4" aria-hidden="true" />
                                   Rechazar
                                 </DropdownMenuItem>
                               </>
                             )}
                             {isActive && (
                               <DropdownMenuItem onClick={() => updateListingStatus(listing.id, "PAUSADO")} className="gap-2 cursor-pointer">
-                                <Pause className="h-4 w-4" />
+                                <Pause className="h-4 w-4" aria-hidden="true" />
                                 Pausar
                               </DropdownMenuItem>
                             )}
                             {isPaused && (
                               <DropdownMenuItem onClick={() => updateListingStatus(listing.id, "ACTIVO")} className="gap-2 cursor-pointer">
-                                <Play className="h-4 w-4 text-success" />
+                                <Play className="h-4 w-4 text-success" aria-hidden="true" />
                                 Reactivar
                               </DropdownMenuItem>
                             )}
                             {(isActive || isPaused) && (
                               <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => updateListingStatus(listing.id, "ELIMINADO")} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
-                                  <Trash2 className="h-4 w-4" />
+                                <DropdownMenuItem onClick={() => setConfirmAction({
+                                  listingId: listing.id,
+                                  status: "ELIMINADO",
+                                  title: "Eliminar publicacion",
+                                  description: `Se eliminara la publicacion ${listing.id} de ${listing.vendedor}. Esta accion no se puede deshacer.`,
+                                  confirmLabel: "Eliminar",
+                                  variant: "destructive",
+                                })} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                                   Eliminar
                                 </DropdownMenuItem>
                               </>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useStore, type SaleStatus } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DollarSign } from "lucide-react"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 
 const statusConfig: Record<SaleStatus, { label: string; className: string }> = {
   VERIFICAR_PAGO: { label: "Verificar Pago", className: "bg-warning/10 text-warning" },
@@ -24,18 +26,32 @@ const statusConfig: Record<SaleStatus, { label: string; className: string }> = {
 export function VendorPaymentsTab() {
   const { sales, payVendorSale } = useStore()
   const pendingPaymentSales = sales.filter((s) => s.status === "PENDIENTE_PAGO_VENDEDOR")
+  const [confirmSale, setConfirmSale] = useState<{ id: string; vendedor: string; subtotal: number } | null>(null)
 
   return (
     <div className="space-y-8">
+      <ConfirmDialog
+        open={confirmSale !== null}
+        onOpenChange={(open) => { if (!open) setConfirmSale(null) }}
+        title="Confirmar pago a vendedor"
+        description={confirmSale ? `Se registrara el pago de $${confirmSale.subtotal} a ${confirmSale.vendedor}. Esta accion no se puede deshacer.` : ""}
+        confirmLabel="Pagar"
+        onConfirm={() => {
+          if (confirmSale) {
+            payVendorSale(confirmSale.id)
+            setConfirmSale(null)
+          }
+        }}
+      />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Pago a vendedores</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">Pago a vendedores</h1>
         <p className="text-sm text-muted-foreground mt-1">Gestiona los pagos pendientes y el historial</p>
       </div>
 
       {/* Pending payments */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">Pendientes de pago</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground text-balance">Pendientes de pago</h2>
           {pendingPaymentSales.length > 0 && (
             <span className="text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
               {pendingPaymentSales.length}
@@ -47,9 +63,9 @@ export function VendorPaymentsTab() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
-                <DollarSign className="h-7 w-7 text-muted-foreground" />
+                <DollarSign className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
               </div>
-              <h3 className="text-base font-medium text-foreground mb-1">Sin pagos pendientes</h3>
+              <h3 className="text-base font-medium text-foreground mb-1 text-balance">Sin pagos pendientes</h3>
               <p className="text-sm text-muted-foreground text-center max-w-xs">
                 No hay ventas esperando pago al vendedor.
               </p>
@@ -88,8 +104,8 @@ export function VendorPaymentsTab() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" onClick={() => payVendorSale(sale.id)} className="gap-1.5 text-xs">
-                          <DollarSign className="h-3.5 w-3.5" />
+                        <Button size="sm" onClick={() => setConfirmSale({ id: sale.id, vendedor: sale.vendedor, subtotal: sale.subtotal })} className="gap-1.5 text-xs">
+                          <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
                           Pagar
                         </Button>
                       </TableCell>
@@ -105,7 +121,7 @@ export function VendorPaymentsTab() {
       {/* History */}
       {sales.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground">Historial de ventas</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground text-balance">Historial de ventas</h2>
           <Card>
             <CardContent className="p-0">
               <Table>

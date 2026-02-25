@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/collapsible"
 import { ShoppingBag, MoreHorizontal, CheckCircle, Package, ArrowRight, ChevronDown, Users } from "lucide-react"
 import { useState } from "react"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 
 function PaymentStatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; className: string }> = {
@@ -60,6 +61,13 @@ function SaleStatusBadge({ status }: { status: SaleStatus }) {
 export function PurchasesTab() {
   const { purchases, sales, verifyPayment, deliverProduct, getSalesForOrder } = useStore()
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+  const [confirmAction, setConfirmAction] = useState<{
+    purchaseId: string
+    action: "verify" | "deliver"
+    title: string
+    description: string
+    confirmLabel: string
+  } | null>(null)
 
   const toggleExpanded = (orderId: string) => {
     setExpandedOrders((prev) => {
@@ -72,8 +80,22 @@ export function PurchasesTab() {
 
   return (
     <div className="space-y-8">
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null) }}
+        title={confirmAction?.title ?? ""}
+        description={confirmAction?.description ?? ""}
+        confirmLabel={confirmAction?.confirmLabel ?? "Confirmar"}
+        onConfirm={() => {
+          if (confirmAction) {
+            if (confirmAction.action === "verify") verifyPayment(confirmAction.purchaseId)
+            else deliverProduct(confirmAction.purchaseId)
+            setConfirmAction(null)
+          }
+        }}
+      />
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Ordenes de compra</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">Ordenes de compra</h1>
         <p className="text-sm text-muted-foreground mt-1">Administra las ordenes hasta la entrega del producto</p>
       </div>
 
@@ -81,9 +103,9 @@ export function PurchasesTab() {
       <div className="flex items-center gap-2 text-xs px-4 py-3 bg-muted/50 rounded-md">
         <span className="text-muted-foreground font-medium">Flujo:</span>
         <span className="px-2 py-0.5 rounded bg-warning/10 text-warning font-medium">Verificar Pago</span>
-        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+        <ArrowRight className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
         <span className="px-2 py-0.5 rounded bg-sky-500/10 text-sky-500 font-medium">Liberar Token</span>
-        <ArrowRight className="h-3 w-3 text-muted-foreground" />
+        <ArrowRight className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
         <span className="px-2 py-0.5 rounded bg-success/10 text-success font-medium">Completado</span>
       </div>
 
@@ -91,9 +113,9 @@ export function PurchasesTab() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
-              <ShoppingBag className="h-7 w-7 text-muted-foreground" />
+              <ShoppingBag className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
             </div>
-            <h3 className="text-base font-medium text-foreground mb-1">Sin ordenes</h3>
+            <h3 className="text-base font-medium text-foreground mb-1 text-balance">Sin ordenes</h3>
             <p className="text-sm text-muted-foreground text-center max-w-xs">
               Cuando los clientes realicen compras, apareceran aqui.
             </p>
@@ -111,12 +133,12 @@ export function PurchasesTab() {
             return (
               <Card key={purchase.id} className="py-0">
                 <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(purchase.id)}>
-                  <div className="p-4">
+                  <div className="p-4 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={isExpanded ? "Contraer detalles" : "Expandir detalles"}>
+                            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} aria-hidden="true" />
                           </Button>
                         </CollapsibleTrigger>
                         <div>
@@ -143,19 +165,31 @@ export function PurchasesTab() {
                         ) : (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Acciones de orden">
+                                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel className="text-xs text-muted-foreground">Acciones</DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem disabled={!canVerify} onClick={() => verifyPayment(purchase.id)} className="cursor-pointer gap-2">
-                                <CheckCircle className="h-4 w-4" />
+                              <DropdownMenuItem disabled={!canVerify} onClick={() => setConfirmAction({
+                                purchaseId: purchase.id,
+                                action: "verify",
+                                title: "Verificar pago",
+                                description: `Se marcara como verificado el pago de la orden ${purchase.id} de ${purchase.comprador} por $${purchase.totalPrice}.`,
+                                confirmLabel: "Verificar Pago",
+                              })} className="cursor-pointer gap-2">
+                                <CheckCircle className="h-4 w-4" aria-hidden="true" />
                                 Verificar Pago
                               </DropdownMenuItem>
-                              <DropdownMenuItem disabled={!canDeliver} onClick={() => deliverProduct(purchase.id)} className="cursor-pointer gap-2">
-                                <Package className="h-4 w-4" />
+                              <DropdownMenuItem disabled={!canDeliver} onClick={() => setConfirmAction({
+                                purchaseId: purchase.id,
+                                action: "deliver",
+                                title: "Liberar token",
+                                description: `Se liberaran ${purchase.totalQuantity} tokens ${purchase.tokenType} a ${purchase.comprador}. Esta accion no se puede deshacer.`,
+                                confirmLabel: "Liberar Token",
+                              })} className="cursor-pointer gap-2">
+                                <Package className="h-4 w-4" aria-hidden="true" />
                                 Liberar Token
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -167,7 +201,7 @@ export function PurchasesTab() {
                   <CollapsibleContent>
                     <div className="border-t border-border px-4 pb-4">
                       <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
-                        <Users className="h-3.5 w-3.5" />
+                        <Users className="h-3.5 w-3.5" aria-hidden="true" />
                         <span>Desglose por vendedor (FIFO)</span>
                       </div>
                       <Table>
