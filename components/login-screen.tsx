@@ -74,7 +74,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           />
           <div className="h-8 w-px bg-border" />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Mercado de Servicios Digitales</h1>
+            <h1 className="text-lg font-semibold text-foreground">Marketplace - Programa de atributos ambientales de Cordoba</h1>
             <p className="text-sm text-muted-foreground">Portal de Compradores</p>
           </div>
         </div>
