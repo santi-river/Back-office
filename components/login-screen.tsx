@@ -68,7 +68,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <header className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
           <img 
-            src="/logo-cordoba.png" 
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/c%C3%B3rdoba%20azul%201-TDUbA6xdAa6bR5K0OwlO7MBPEGqtcI.png" 
             alt="Gobierno de la Provincia de Cordoba" 
             className="h-12 w-auto object-contain"
           />
