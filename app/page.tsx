@@ -7,9 +7,14 @@ import { DashboardTab } from "@/components/dashboard-tab"
 import { SalesListingsTab } from "@/components/sales-listings-tab"
 import { PurchasesTab } from "@/components/purchases-tab"
 import { VendorPaymentsTab } from "@/components/vendor-payments-tab"
-import { ListChecks, ShoppingBag, LayoutDashboard, DollarSign } from "lucide-react"
+import { LoginScreen } from "@/components/login-screen"
+import { ListChecks, ShoppingBag, LayoutDashboard, DollarSign, LogOut } from "lucide-react"
 
 type Tab = "dashboard" | "sales" | "purchases" | "payments"
+
+interface User {
+  email: string
+}
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -44,7 +49,7 @@ function SidebarButton({
   )
 }
 
-function AppContent() {
+function AppContent({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard")
 
   return (
@@ -65,6 +70,22 @@ function AppContent() {
             />
           ))}
         </nav>
+        
+        {/* User info and logout */}
+        <div className="mt-auto mb-4 px-3 w-full">
+          <div className="border-t border-sidebar-border pt-4">
+            <p className="text-xs text-muted-foreground truncate mb-2 px-1" title={user.email}>
+              {user.email}
+            </p>
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 w-full px-2 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar sesion
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Main content */}
@@ -81,9 +102,23 @@ function AppContent() {
 }
 
 export default function Page() {
+  const [user, setUser] = useState<User | null>(null)
+
+  const handleLoginSuccess = (email: string) => {
+    setUser({ email })
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+  }
+
+  if (!user) {
+    return <LoginScreen onLoginSuccess={handleLoginSuccess} />
+  }
+
   return (
     <StoreProvider>
-      <AppContent />
+      <AppContent user={user} onLogout={handleLogout} />
     </StoreProvider>
   )
 }
