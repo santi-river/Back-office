@@ -4,14 +4,16 @@ import React from "react"
 import { useState } from "react"
 import { StoreProvider } from "@/lib/store"
 import { DashboardTab } from "@/components/dashboard-tab"
+import { MarketplaceTab } from "@/components/marketplace-tab"
 import { SalesListingsTab } from "@/components/sales-listings-tab"
 import { PurchasesTab } from "@/components/purchases-tab"
 import { VendorPaymentsTab } from "@/components/vendor-payments-tab"
-import { ListChecks, ShoppingBag, LayoutDashboard, DollarSign } from "lucide-react"
+import { ListChecks, ShoppingBag, LayoutDashboard, DollarSign, Store } from "lucide-react"
 
-type Tab = "dashboard" | "sales" | "purchases" | "payments"
+type Tab = "marketplace" | "dashboard" | "sales" | "purchases" | "payments"
 
 const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: "marketplace", label: "Marketplace", icon: Store },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "sales", label: "Ventas", icon: ListChecks },
   { id: "purchases", label: "Compras", icon: ShoppingBag },
@@ -70,6 +72,7 @@ function AppContent() {
       {/* Main content */}
       <main className="flex-1 overflow-auto">
         <div className="max-w-6xl mx-auto px-8 py-8">
+          {activeTab === "marketplace" && <MarketplaceTab />}
           {activeTab === "dashboard" && <DashboardTab />}
           {activeTab === "sales" && <SalesListingsTab />}
           {activeTab === "purchases" && <PurchasesTab />}
